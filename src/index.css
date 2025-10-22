@@ -21,6 +21,7 @@ All colors MUST be HSL.
     /* Primary: Rust Orange/Terracotta #c15738 */
     --primary: 12 61% 49%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 12 71% 59%;
     
     /* Secondary: Deep Earth Brown #5c2d23 */
     --secondary: 15 42% 25%;
@@ -40,8 +41,20 @@ All colors MUST be HSL.
     --border: 20 20% 88%;
     --input: 20 20% 88%;
     --ring: 12 61% 49%;
+    
+    /* Glass morphism borders */
+    --glass-border: 0 0% 100% / 0.2;
+    --glass-bg: 0 0% 100% / 0.7;
 
     --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-subtle: linear-gradient(180deg, hsl(30 20% 97%), hsl(30 25% 94%));
+
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
 
     --sidebar-background: 30 20% 97%;
     --sidebar-foreground: 15 35% 20%;
@@ -65,6 +78,7 @@ All colors MUST be HSL.
 
     --primary: 12 61% 49%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 12 71% 59%;
 
     --secondary: 15 25% 22%;
     --secondary-foreground: 30 20% 97%;
@@ -81,6 +95,9 @@ All colors MUST be HSL.
     --border: 15 25% 22%;
     --input: 15 25% 22%;
     --ring: 12 61% 55%;
+    
+    --glass-border: 255 255 255 / 0.1;
+    --glass-bg: 0 0% 0% / 0.4;
     
     --sidebar-background: 15 35% 12%;
     --sidebar-foreground: 30 20% 97%;
@@ -109,10 +126,29 @@ All colors MUST be HSL.
   }
 }
 
+/* Glass Morphism Design System */
+@layer components {
+  .glass-card {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+  }
+  
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:bg-white/80 hover:shadow-2xl hover:scale-[1.02];
+  }
+  
+  .glass-morphism {
+    @apply bg-white/60 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10;
+  }
+  
+  .glass-bg {
+    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900;
+  }
+}
+
 /* Custom utility classes */
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent;
   }
 
   .glass-effect {
@@ -122,51 +158,75 @@ All colors MUST be HSL.
   .shadow-elegant {
     box-shadow: 0 10px 40px -10px hsl(var(--primary) / 0.2);
   }
+  
+  .shadow-3d {
+    box-shadow: 
+      0 10px 30px -5px rgba(0, 0, 0, 0.1),
+      0 20px 60px -10px rgba(0, 0, 0, 0.15),
+      0 0 60px -15px hsl(var(--primary) / 0.3);
+  }
 
   .hover-lift {
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-elegant;
+  }
+  
+  .hover-3d {
+    @apply transition-all duration-500 hover:-translate-y-2 hover:shadow-3d;
   }
 
   .section-padding {
     @apply py-16 md:py-24;
   }
+  
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  }
+  
+  .bg-gradient-subtle {
+    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900;
+  }
 }
+
+/* Animations */
 .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
- @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-20px);
-    }
-  }
+  animation: float 6s ease-in-out infinite;
+}
 
-  .animate-slide-up {
-    animation: slideUp 0.6s ease-out;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
   }
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  50% {
+    transform: translateY(-20px);
   }
+}
 
-  .animate-scale-in {
-    animation: scaleIn 0.4s ease-out;
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
- @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -1,23 +1,378 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react";
+import {  MapPin,  Loader2 } from "lucide-react";
+
+import { Card } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Phone, Mail, MessageSquare, Building, Users, TrendingUp, Send } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import SEOHead from "@/components/SEOHead";
+import SuccessDialog from "@/components/SucessDialog";
+import { toast } from "sonner";
+const contactFormSchema = z.object({
+  firstName: z.string()
+    .trim()
+    .min(1, "First name is required")
+    .max(50, "First name must be less than 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "First name can only contain letters and spaces"),
+  lastName: z.string()
+    .trim()
+    .min(1, "Last name is required")
+    .max(50, "Last name must be less than 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Last name can only contain letters and spaces"),
+  email: z.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters"),
+  phone: z.string()
+    .trim()
+    .min(10, "Phone number must be at least 10 digits")
+    .max(15, "Phone number must be less than 15 digits")
+    .regex(/^[\+]?[0-9\s\-\(\)]+$/, "Please enter a valid phone number"),
+  company: z.string()
+    .trim()
+    .min(1, "Company name is required")
+    .max(100, "Company name must be less than 100 characters"),
+  message: z.string()
+    .trim()
+    .min(10, "Message must be at least 10 characters")
+    .max(1000, "Message must be less than 1000 characters"),
+  additionalInfo: z.string()
+    .trim()
+    .max(200, "Additional information must be less than 200 characters")
+    .optional()
+});
+
+type ContactFormData = z.infer<typeof contactFormSchema>;
 
 const Contact = () => {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
+  const [formData, setFormData] = useState<ContactFormData>({
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
-    subject: "",
-    message: ""
+    company: "",
+    message: "",
+    additionalInfo: ""
   });
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<Partial<ContactFormData>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const formRef = useRef(null);
+  const isFormInView = useInView(formRef, { once: true, margin: "-50px" });
+
+  const handleInputChange = (field: keyof ContactFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const validateForm = (type: string) => {
+    try {
+      let dataToValidate = { ...formData };
+      
+      if ((type === "Supplier" || type === "Partnership") && !formData.additionalInfo?.trim()) {
+        const fieldName = type === "Supplier" ? "Product Categories" : "Partnership Type";
+        toast.error(`${fieldName} is required.`);
+        return false;
+      }
+
+      contactFormSchema.parse(dataToValidate);
+
+      if (!agreedToPrivacy) {
+        toast.error("Please accept the privacy policy to continue.");
+        return false;
+      }
+
+      setFormErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Partial<ContactFormData> = {};
+        error.issues.forEach((issue) => {
+          const field = issue.path[0] as keyof ContactFormData;
+          errors[field] = issue.message;
+        });
+        setFormErrors(errors);
+        
+        const firstError = error.issues[0];
+        toast.error(firstError.message);
+      }
+      return false;
+    }
+  };
+
+  const handleSubmit = async (type: string) => {
+    if (!validateForm(type) || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare WhatsApp message
+      let whatsappMessage = `*${type} Enquiry - MaterialMatrix*\n\n`;
+      whatsappMessage += `*Contact Details:*\n`;
+      whatsappMessage += `Name: ${formData.firstName} ${formData.lastName}\n`;
+      whatsappMessage += `Email: ${formData.email}\n`;
+      whatsappMessage += `Phone: ${formData.phone}\n`;
+      whatsappMessage += `Company: ${formData.company}\n\n`;
+      
+      if (formData.additionalInfo) {
+        const fieldName = type === "Supplier" ? "Product Categories" : 
+                         type === "Partnership" ? "Partnership Type" : "Additional Info";
+        whatsappMessage += `*${fieldName}:* ${formData.additionalInfo}\n\n`;
+      }
+      
+      whatsappMessage += `*Message:*\n${formData.message}\n\n`;
+      whatsappMessage += `_Enquiry Type: ${type}_\n`;
+      whatsappMessage += `_Submitted: ${new Date().toLocaleString()}_`;
+      
+      const encodedWhatsAppMessage = encodeURIComponent(whatsappMessage);
+      const whatsappUrl = `https://wa.me/917021341409?text=${encodedWhatsAppMessage}`;
+      
+      // Prepare Email
+      const emailSubject = encodeURIComponent(`${type} Enquiry from ${formData.firstName} ${formData.lastName} - MaterialMatrix`);
+      
+      let emailBody = `${type} Enquiry - MaterialMatrix Contact Form\n\n`;
+      emailBody += `Contact Details:\n`;
+      emailBody += `Name: ${formData.firstName} ${formData.lastName}\n`;
+      emailBody += `Email: ${formData.email}\n`;
+      emailBody += `Phone: ${formData.phone}\n`;
+      emailBody += `Company: ${formData.company}\n\n`;
+      
+      if (formData.additionalInfo) {
+        const fieldName = type === "Supplier" ? "Product Categories" : 
+                         type === "Partnership" ? "Partnership Type" : "Additional Info";
+        emailBody += `${fieldName}: ${formData.additionalInfo}\n\n`;
+      }
+      
+      emailBody += `Message:\n${formData.message}\n\n`;
+      emailBody += `Enquiry Type: ${type}\n`;
+      emailBody += `Submitted: ${new Date().toLocaleString()}`;
+      
+      const encodedEmailBody = encodeURIComponent(emailBody);
+      const emailUrl = `mailto:yurekhsolutions@gmail.com?subject=${emailSubject}&body=${encodedEmailBody}`;
+      
+      // Open both WhatsApp and Email
+      window.open(whatsappUrl, '_blank');
+      setTimeout(() => {
+        window.open(emailUrl, '_blank');
+      }, 500);
+      
+      // Show success dialog
+      setShowSuccess(true);
+
+      // Reset form
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        company: "",
+        message: "",
+        additionalInfo: ""
+      });
+      setAgreedToPrivacy(false);
+      setFormErrors({});
+      
+    } catch (error) {
+      toast.error("There was an issue preparing your message. Please try again or contact us directly.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const renderFormFields = (tabId: string, type: string) => (
+    <div className="space-y-4 md:space-y-6">
+      <motion.div 
+        className="text-center lg:text-left mb-4 md:mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-2">{type}</h3>
+        <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+          {type === "General Enquiry" && "Have a question? We're here to help with any general inquiries about our platform and services."}
+          {type === "Become a Supplier" && "Join our network of trusted suppliers and grow your business with MaterialMatrix."}
+          {type === "Partnership" && "Explore partnership opportunities and collaborate with us to revolutionize construction material procurement."}
+          {type === "Investor Relations" && "Learn about investment opportunities and our company's growth trajectory."}
+        </p>
+      </motion.div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="space-y-2">
+          <Label htmlFor={`firstName-${tabId}`} className="text-foreground font-medium">
+            First name *
+          </Label>
+          <Input
+            id={`firstName-${tabId}`}
+            placeholder="Enter your first name"
+            value={formData.firstName}
+            onChange={(e) => handleInputChange("firstName", e.target.value)}
+            className={`glass-morphism ${formErrors.firstName ? 'border-destructive' : ''}`}
+            required
+          />
+          {formErrors.firstName && (
+            <p className="text-destructive text-xs">{formErrors.firstName}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`lastName-${tabId}`} className="text-foreground font-medium">
+            Last name *
+          </Label>
+          <Input
+            id={`lastName-${tabId}`}
+            placeholder="Enter your last name"
+            value={formData.lastName}
+            onChange={(e) => handleInputChange("lastName", e.target.value)}
+            className={`glass-morphism ${formErrors.lastName ? 'border-destructive' : ''}`}
+            required
+          />
+          {formErrors.lastName && (
+            <p className="text-destructive text-xs">{formErrors.lastName}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="space-y-2">
+          <Label htmlFor={`email-${tabId}`} className="text-foreground font-medium">
+            Email *
+          </Label>
+          <Input
+            id={`email-${tabId}`}
+            type="email"
+            placeholder="your.email@company.com"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            className={`glass-morphism ${formErrors.email ? 'border-destructive' : ''}`}
+            required
+          />
+          {formErrors.email && (
+            <p className="text-destructive text-xs">{formErrors.email}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`phone-${tabId}`} className="text-foreground font-medium">
+            Phone number *
+          </Label>
+          <Input
+            id={`phone-${tabId}`}
+            placeholder="+91 12345 67890"
+            value={formData.phone}
+            onChange={(e) => handleInputChange("phone", e.target.value)}
+            className={`glass-morphism ${formErrors.phone ? 'border-destructive' : ''}`}
+            required
+          />
+          {formErrors.phone && (
+            <p className="text-destructive text-xs">{formErrors.phone}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`company-${tabId}`} className="text-foreground font-medium">
+          Company name *
+        </Label>
+        <Input
+          id={`company-${tabId}`}
+          placeholder="Your company or organization name"
+          value={formData.company}
+          onChange={(e) => handleInputChange("company", e.target.value)}
+          className={`glass-morphism ${formErrors.company ? 'border-destructive' : ''}`}
+          required
+        />
+        {formErrors.company && (
+          <p className="text-destructive text-xs">{formErrors.company}</p>
+        )}
+      </div>
+
+      {(type === "Become a Supplier" || type === "Partnership") && (
+        <div className="space-y-2">
+          <Label htmlFor={`additionalInfo-${tabId}`} className="text-foreground font-medium">
+            {type === "Become a Supplier" ? "Product Categories *" : "Partnership Type *"}
+          </Label>
+          <Input
+            id={`additionalInfo-${tabId}`}
+            placeholder={
+              type === "Become a Supplier" 
+                ? "e.g., Steel, Cement, Construction Equipment" 
+                : "e.g., Technology Partner, Distribution Partner"
+            }
+            value={formData.additionalInfo || ""}
+            onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
+            className="glass-morphism"
+            required
+          />
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor={`message-${tabId}`} className="text-foreground font-medium">
+          Message *
+        </Label>
+        <Textarea
+          id={`message-${tabId}`}
+          placeholder={`Please provide details about ${
+            type === "Become a Supplier" ? "your products and services..." :
+            type === "Partnership" ? "your partnership proposal..." :
+            type === "Investor Relations" ? "your investment inquiry..." :
+            "your inquiry..."
+          }`}
+          value={formData.message}
+          onChange={(e) => handleInputChange("message", e.target.value)}
+          className={`glass-morphism min-h-[120px] resize-none ${formErrors.message ? 'border-destructive' : ''}`}
+          required
+        />
+        {formErrors.message && (
+          <p className="text-destructive text-xs">{formErrors.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-start space-x-3">
+          <input 
+            type="checkbox" 
+            id={`privacy-${tabId}`}
+            checked={agreedToPrivacy}
+            onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+            className="mt-1 rounded border-border accent-primary" 
+            required
+          />
+          <label htmlFor={`privacy-${tabId}`} className="text-sm text-muted-foreground leading-relaxed">
+            I confirm that I have read and accepted the privacy policy and agree to the processing of my personal data. *
+          </label>
+        </div>
+      </div>
+
+      <Button 
+        onClick={() => handleSubmit(type)}
+        disabled={isSubmitting}
+        className="w-full h-12 flex items-center justify-center bg-gradient-primary hover:shadow-glow transition-all duration-300 disabled:opacity-50"
+      >
+        <Send className="h-5 w-5 mr-2" />
+        {isSubmitting ? "Sending..." : "Send Message"}
+      </Button>
+    </div>
+  );
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact MaterialMatrix",
+    "description": "Get in touch with MaterialMatrix for construction material procurement, supplier partnerships, and business inquiries",
+    "url": "https://materialmatrix.com/contact"
+  };
 
   const contactInfo = [
     {
@@ -35,50 +390,11 @@ const Contact = () => {
     {
       icon: MapPin,
       title: "Address",
-      value: "Pune, Maharashtra, India",
+      value: "Mumbai, Maharashtra, India",
       link: null
     }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      // In a real implementation, this would send to an API
-      // For now, we'll open WhatsApp with the message
-      const message = `
-*Contact Form Submission*
-
-Name: ${formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Subject: ${formData.subject}
-
-Message:
-${formData.message}
-      `.trim();
-
-      const whatsappURL = `https://wa.me/917021341409?text=${encodeURIComponent(message)}`;
-      
-      toast.success("Message sent! Opening WhatsApp...");
-      
-      setTimeout(() => {
-        window.open(whatsappURL, "_blank");
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          subject: "",
-          message: ""
-        });
-      }, 1000);
-    } catch (error) {
-      toast.error("Failed to send message. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <>
@@ -87,7 +403,7 @@ ${formData.message}
         description="Get in touch with MaterialMatrix. We're here to help with your construction material procurement needs."
       />
 
-      <div className="min-h-screen bg-background pt-20 md:pt-24">
+      <div className="min-h-screen bg-background  ">
         {/* Header */}
         <section className="py-16 md:py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
           <div className="container mx-auto px-4 text-center">
@@ -95,7 +411,7 @@ ${formData.message}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 mt-20">
                 <span className="text-gradient">Contact Us</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -134,104 +450,172 @@ ${formData.message}
               </motion.div>
             ))}
           </div>
+           <div className="container mx-auto px-4 pb-16 mt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Contact Form */}
+            <div className="lg:col-span-2" ref={formRef}>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                transition={{ duration: 0.6 }}
+              >
+                <GlassCard variant="premium" className="p-6 md:p-8">
+                  <div className="mb-6">
+                    <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Send Us a Message</h2>
+                    <p className="text-muted-foreground text-sm md:text-base">
+                      Choose the type of inquiry that best matches your needs.
+                    </p>
+                  </div>
+                  <Tabs defaultValue="general" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 mb-6 glass-morphism p-1">
+                      <TabsTrigger 
+                        value="general" 
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="hidden sm:inline">General</span>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="supplier"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                      >
+                        <Building className="h-4 w-4" />
+                        <span className="hidden sm:inline">Supplier</span>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="partnership"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                      >
+                        <Users className="h-4 w-4" />
+                        <span className="hidden sm:inline">Partner</span>
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="investor"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                        <span className="hidden sm:inline">Investor</span>
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="general">
+                      {renderFormFields("general", "General Enquiry")}
+                    </TabsContent>
+
+                    <TabsContent value="supplier">
+                      {renderFormFields("supplier", "Become a Supplier")}
+                    </TabsContent>
+
+                    <TabsContent value="partnership">
+                      {renderFormFields("partnership", "Partnership")}
+                    </TabsContent>
+
+                    <TabsContent value="investor">
+                      {renderFormFields("investor", "Investor Relations")}
+                    </TabsContent>
+                  </Tabs>
+                </GlassCard>
+              </motion.div>
+            </div>
+
+            {/* Contact Info Sidebar */}
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+                transition={{ duration: 0.6 }}
+              >
+                <GlassCard variant="premium" className="p-6">
+                  <h3 className="text-xl font-semibold text-foreground mb-6">Contact Information</h3>
+                  
+                  <div className="space-y-4">
+                    <div
+                      className="group cursor-pointer"
+                      onClick={() => window.open('tel:+917021341409')}
+                    >
+                      <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
+                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Phone className="h-6 w-6 text-primary-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                            Phone Support
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            +91 917021341409
+                          </p>
+                          <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/30">
+                            24/7 Available
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="group cursor-pointer"
+                      onClick={() => window.open('mailto:yurekhsolutions@gmail.com')}
+                    >
+                      <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
+                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Mail className="h-6 w-6 text-primary-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                            Email Support
+                          </p>
+                          <p className="text-sm text-muted-foreground break-words">
+                            yurekhsolutions@gmail.com
+                          </p>
+                          <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/30">
+                            Response within 1 hour
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              {/* Business Hours */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <GlassCard variant="premium" className="p-6">
+                  <h3 className="text-xl font-semibold text-foreground mb-6">Business Hours</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground text-sm">Monday - Friday</span>
+                      <span className="text-foreground font-medium text-sm">9:00 AM - 6:00 PM</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground text-sm">Saturday</span>
+                      <span className="text-foreground font-medium text-sm">9:00 AM - 4:00 PM</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-muted-foreground text-sm">Sunday</span>
+                      <span className="text-destructive font-medium text-sm">Closed</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <p className="text-sm font-medium text-primary mb-2">24/7 Emergency Support</p>
+                    <p className="text-xs text-muted-foreground">
+                      For urgent platform needs, our AI-powered system is available round the clock.
+                    </p>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </div>
+          </div>
+        </div>
         </section>
 
         {/* Contact Form */}
-        <section className="py-12 pb-24 container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl mx-auto"
-          >
-            <Card className="p-6 md:p-8">
-              <h2 className="text-2xl font-bold mb-6 text-center">
-                Send us a Message
-              </h2>
+            <SuccessDialog open={showSuccess} onClose={() => setShowSuccess(false)} />
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter your name"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="your.email@company.com"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+91 12345 67890"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject *</Label>
-                    <Input
-                      id="subject"
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder="How can we help?"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message *</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Tell us more about your inquiry..."
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-5 w-5" />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-
-                <p className="text-xs text-center text-muted-foreground">
-                  We'll get back to you within 24 hours
-                </p>
-              </form>
-            </Card>
-          </motion.div>
-        </section>
       </div>
     </>
   );

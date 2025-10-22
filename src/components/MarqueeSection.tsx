@@ -105,7 +105,7 @@ const MarqueeCard = ({ card }: { card: MarqueeCard }) => {
                  <Icon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
           </div>
           <motion.div 
-            className="text-4xl sm:text-5xl text-gray-200 font-medium "
+            className="text-4xl sm:text-3xl text-gray-200 font-medium "
             initial={{ opacity: 0.8 }}
             whileHover={{ opacity: 1, scale: 1.1 }}
           >

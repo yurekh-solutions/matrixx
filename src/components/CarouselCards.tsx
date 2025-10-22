@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Sparkles, Zap, Shield, TrendingUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Zap,
+  Shield,
+  TrendingUp,
+} from "lucide-react";
+
 import aiSourcingImg from "@/assets/ai-sourcing-optimization.jpg";
 import autonomousImg from "@/assets/autonomous-procurement.jpg";
 import rateManagementImg from "@/assets/rate-management.jpg";
@@ -25,7 +33,8 @@ const CarouselCards = () => {
       id: 1,
       title: "AI Sourcing Optimization",
       subtitle: "Smart Material Discovery",
-      description: "Leverage advanced AI to find the best suppliers and materials instantly. Our machine learning algorithms analyze thousands of options to match your exact requirements.",
+      description:
+        "Leverage advanced AI to find the best suppliers and materials instantly. Our machine learning algorithms analyze thousands of options to match your exact requirements.",
       image: aiSourcingImg,
       icon: Sparkles,
       stats: [
@@ -37,7 +46,8 @@ const CarouselCards = () => {
       id: 2,
       title: "Autonomous Procurement",
       subtitle: "Zero-Touch Ordering",
-      description: "Automated procurement workflows that predict demand, optimize inventory, and place orders without manual intervention. AI handles the entire process seamlessly.",
+      description:
+        "Automated procurement workflows that predict demand, optimize inventory, and place orders without manual intervention. AI handles the entire process seamlessly.",
       image: autonomousImg,
       icon: Zap,
       stats: [
@@ -49,7 +59,8 @@ const CarouselCards = () => {
       id: 3,
       title: "Real-Time Rate Intelligence",
       subtitle: "Dynamic Pricing Insights",
-      description: "Stay ahead with live market analytics and price forecasting. Our AI continuously monitors price fluctuations to ensure optimal procurement timing.",
+      description:
+        "Stay ahead with live market analytics and price forecasting. Our AI continuously monitors price fluctuations to ensure optimal procurement timing.",
       image: rateManagementImg,
       icon: TrendingUp,
       stats: [
@@ -61,7 +72,8 @@ const CarouselCards = () => {
       id: 4,
       title: "Verified Supplier Network",
       subtitle: "Trust & Quality Assured",
-      description: "Every supplier undergoes rigorous AI-powered verification. Continuous performance monitoring ensures consistent quality and reliability.",
+      description:
+        "Every supplier undergoes rigorous AI-powered verification. Continuous performance monitoring ensures consistent quality and reliability.",
       image: supplierVerificationImg,
       icon: Shield,
       stats: [
@@ -75,7 +87,7 @@ const CarouselCards = () => {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
       opacity: 0,
-      scale: 0.8,
+      scale: 0.9,
     }),
     center: {
       zIndex: 1,
@@ -87,7 +99,7 @@ const CarouselCards = () => {
       zIndex: 0,
       x: direction < 0 ? 1000 : -1000,
       opacity: 0,
-      scale: 0.8,
+      scale: 0.9,
     }),
   };
 
@@ -101,9 +113,8 @@ const CarouselCards = () => {
     setCurrentIndex((prev) => (prev - 1 + cards.length) % cards.length);
   };
 
-  // Auto-advance carousel
   useEffect(() => {
-    const timer = setInterval(nextSlide, 5000);
+    const timer = setInterval(nextSlide, 6000);
     return () => clearInterval(timer);
   }, []);
 
@@ -111,29 +122,34 @@ const CarouselCards = () => {
   const Icon = currentCard.icon;
 
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-primary/5 via-background to-secondary/5 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-[100px]" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/10 rounded-full blur-[120px]" />
+    <section className="py-16 md:py-28 bg-gradient-to-br from-primary/5 via-background to-secondary/5 relative overflow-hidden">
+      {/* Decorative background blobs */}
+      <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
+      <div className="absolute bottom-20 right-20 w-80 h-80 bg-secondary/10 rounded-full blur-[120px]" />
 
       <div className="container mx-auto px-4 relative z-10">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-10 md:mb-16"
         >
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Explore Our <span className="text-gradient">AI Capabilities</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">
+            Explore Our{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">
+              AI Capabilities
+            </span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover how artificial intelligence transforms every aspect of procurement
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+            Discover how artificial intelligence transforms every aspect of
+            procurement.
           </p>
         </motion.div>
 
+        {/* Carousel Container */}
         <div className="relative max-w-6xl mx-auto">
-          {/* Main Carousel Card */}
-          <div className="relative h-[400px] md:h-[400px]">
+          <div className="relative min-h-[550px] sm:min-h-[480px]">
             <AnimatePresence initial={false} custom={direction}>
               <motion.div
                 key={currentIndex}
@@ -144,63 +160,59 @@ const CarouselCards = () => {
                 exit="exit"
                 transition={{
                   x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.3 },
-                  scale: { duration: 0.3 },
+                  opacity: { duration: 0.4 },
                 }}
                 className="absolute inset-0"
               >
-                <div className="glass-effect rounded-3xl overflow-hidden h-full shadow-elegant hover-lift">
-                  <div className="grid md:grid-cols-2 h-full">
-                    {/* Image Side */}
-                    <div className="relative overflow-hidden">
+                <div className="glass-effect rounded-3xl overflow-hidden h-auto shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div className="grid grid-cols-1 md:grid-cols-2">
+                    {/* Image Section */}
+                    <div className="relative w-full h-auto md:h-full">
                       <img
                         src={currentCard.image}
                         alt={currentCard.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-auto md:h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/20 to-transparent" />
-                      
-                      {/* Icon Badge */}
-                      <div className="absolute top-6 left-6">
-                        <div className="glass-effect rounded-2xl p-3 border border-white/30">
-                          <Icon className="w-8 h-8 text-white drop-shadow-lg" />
+                      <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+                        <div className="glass-effect rounded-2xl p-2 sm:p-3 border border-white/30">
+                          <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
                         </div>
                       </div>
                     </div>
 
-                    {/* Content Side */}
-                    <div className="p-8 md:p-10 flex flex-col justify-center bg-gradient-to-br from-background/50 to-primary/5 backdrop-blur-md">
+                    {/* Text Content */}
+                    <div className="p-6 sm:p-8 md:p-10 flex flex-col justify-center bg-gradient-to-br from-background/50 to-primary/5 backdrop-blur-md">
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                       >
-                        <span className="text-sm font-bold text-primary bg-primary/10 px-4 py-2 rounded-full border border-primary/20 inline-block mb-4">
+                        <span className="text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-primary/20 inline-block mb-3 sm:mb-4">
                           {currentCard.subtitle}
                         </span>
-                        
-                        <h3 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+
+                        <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-foreground">
                           {currentCard.title}
                         </h3>
-                        
-                        <p className="text-muted-foreground text-lg leading-relaxed mb-6">
+
+                        <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed mb-6">
                           {currentCard.description}
                         </p>
 
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
                           {currentCard.stats.map((stat, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: 0.3 + idx * 0.1 }}
-                              className="glass-effect rounded-xl p-4 border border-primary/10"
+                              className="glass-effect rounded-xl p-3 sm:p-4 border border-primary/10"
                             >
-                              <div className="text-2xl md:text-3xl font-bold text-primary mb-1">
+                              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1">
                                 {stat.value}
                               </div>
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-xs sm:text-sm text-muted-foreground">
                                 {stat.label}
                               </div>
                             </motion.div>
@@ -214,28 +226,28 @@ const CarouselCards = () => {
             </AnimatePresence>
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-4 pointer-events-none">
+          {/* Nav Buttons */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-3 sm:px-4 pointer-events-none">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={prevSlide}
-              className="glass-effect rounded-full p-3 hover:bg-primary/20 transition-colors pointer-events-auto shadow-elegant"
+              className="glass-effect rounded-full p-2 sm:p-3 hover:bg-primary/20 transition-colors pointer-events-auto shadow-lg"
             >
-              <ChevronLeft className="w-6 h-6 text-primary" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={nextSlide}
-              className="glass-effect rounded-full p-3 hover:bg-primary/20 transition-colors pointer-events-auto shadow-elegant"
+              className="glass-effect rounded-full p-2 sm:p-3 hover:bg-primary/20 transition-colors pointer-events-auto shadow-lg"
             >
-              <ChevronRight className="w-6 h-6 text-primary" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </motion.button>
           </div>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center gap-2 mt-8">
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mt-6 sm:mt-8">
             {cards.map((_, idx) => (
               <button
                 key={idx}
@@ -245,7 +257,7 @@ const CarouselCards = () => {
                 }}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   idx === currentIndex
-                    ? "w-12 bg-primary"
+                    ? "w-8 sm:w-12 bg-primary"
                     : "w-2 bg-primary/30 hover:bg-primary/50"
                 }`}
               />

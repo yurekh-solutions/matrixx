@@ -185,3 +185,4 @@ for (let i = products.length; i < 100; i++) {
 export const categories_list = Array.from(new Set(products.map((p) => p.category)));
 export const suppliers_list = Array.from(new Set(products.map((p) => p.supplier)));
 export const brands_list = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
+

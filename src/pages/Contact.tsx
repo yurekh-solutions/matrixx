@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Phone, Mail, MessageSquare, Building, Users, TrendingUp, Send } from "lucide-react";
+import { Phone, Mail, MessageSquare, Building, Users, TrendingUp,Clock, CheckCircle, Star, Send, Headphones  } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SEOHead from "@/components/SEOHead";
+import AnimatedCounter from "@/components/AnimatedCounter";
+
 import SuccessDialog from "@/components/SucessDialog";
 import { toast } from "sonner";
 const contactFormSchema = z.object({
@@ -52,6 +54,7 @@ const contactFormSchema = z.object({
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
 const Contact = () => {
+  
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -65,9 +68,11 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<ContactFormData>>({});
   const [showSuccess, setShowSuccess] = useState(false);
-
+  const statsRef = useRef(null);
+                          
   const formRef = useRef(null);
   const isFormInView = useInView(formRef, { once: true, margin: "-50px" });
+  const isStatsInView = useInView(statsRef, { once: true, margin: "-50px" });
 
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -75,6 +80,12 @@ const Contact = () => {
       setFormErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
+const responseStats = [
+    { label: "Avg Response Time", value: 15, unit: "min", icon: Clock },
+    { label: "Customer Satisfaction", value: 98, unit: "%", icon: Star },
+    { label: "Issues Resolved", value: 99, unit: "%", icon: CheckCircle },
+    { label: "Support Availability", value: 24, unit: "/7", icon: Headphones }
+  ];
 
   const validateForm = (type: string) => {
     try {
@@ -358,7 +369,7 @@ const Contact = () => {
       <Button 
         onClick={() => handleSubmit(type)}
         disabled={isSubmitting}
-        className="w-full h-12 flex items-center justify-center bg-gradient-primary hover:shadow-glow transition-all duration-300 disabled:opacity-50"
+        className="w-full h-12 flex items-center justify-center bg-gradient-to-br from-primary to-secondary  hover:shadow-glow transition-all duration-300 disabled:opacity-50"
       >
         <Send className="h-5 w-5 mr-2" />
         {isSubmitting ? "Sending..." : "Send Message"}
@@ -405,25 +416,79 @@ const Contact = () => {
 
       <div className="min-h-screen bg-background  ">
         {/* Header */}
-        <section className="py-16 md:py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
-          <div className="container mx-auto px-4 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 mt-20">
-                <span className="text-gradient">Contact Us</span>
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
-              </p>
-            </motion.div>
+      
+        <section className="py-12 md:py-20 relative overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary-glow/5 pointer-events-none" />
+
+  <div className="container mx-auto px-4 relative z-10 mt-20">
+    <motion.div
+      className="text-center mb-12 md:mb-16"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <Badge className="mb-4 md:mb-6 bg-primary/10 text-primary border-primary/30 px-4 md:px-6 py-1.5 md:py-2">
+        Contact Us
+      </Badge>
+      <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+        <span className="bg-gradient-to-r from-[#c15738] to-[#5c2d23] bg-clip-text text-transparent">
+          Get in Touch
+        </span>
+      </h1>
+      <div className="w-24 md:w-32 h-1 bg-gradient-primary mx-auto rounded-full mb-6 md:mb-8" />
+      <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+        We're here to help with any questions about our products, services, partnerships, 
+        or investment opportunities. Our team responds within 15 minutes.
+      </p>
+    </motion.div>
+
+    {/* Response Time Stats */}
+    <div
+      className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12 md:mb-16"
+      ref={statsRef}
+    >
+      {responseStats.map((stat, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 20 }}
+          animate={isStatsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, delay: index * 0.1 }}
+        >
+          {/* 🌟 Glassmorphism Card with Border + Shadow */}
+          <div className="
+            p-4 md:p-6 text-center group 
+            rounded-2xl 
+            bg-white/10 
+              border border-white/20 
+    shadow-[0_4px_20px_rgba(0,0,0,0.1)] 
+    transition-all duration-300 ease-in-out
+
+    hover:bg-white/20
+  
+          ">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
+              <stat.icon className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
+            </div>
+            <div className="text-xl md:text-2xl font-bold text-primary mb-1">
+              <AnimatedCounter 
+                end={stat.value} 
+                suffix={stat.unit}
+                duration={2}
+              />
+            </div>
+            <p className="text-xs md:text-sm font-medium text-foreground">{stat.label}</p>
           </div>
-        </section>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</section>
+
+
 
         {/* Contact Info Cards */}
-        <section className="py-12 container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <section className=" container  mx-auto px-4">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {contactInfo.map((info, index) => (
               <motion.div
                 key={index}
@@ -449,49 +514,49 @@ const Contact = () => {
                 </Card>
               </motion.div>
             ))}
-          </div>
-           <div className="container mx-auto px-4 pb-16 mt-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          </div> */}
+           <div className="container bg-[#faf7f6] mx-auto px-4 pb-16 ">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 rounded-full ">
             {/* Contact Form */}
-            <div className="lg:col-span-2" ref={formRef}>
+            <div className="lg:col-span-2 rounded-full " ref={formRef}>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                 transition={{ duration: 0.6 }}
               >
-                <GlassCard variant="premium" className="p-6 md:p-8">
+                <Card variant="premium" className="p-6 md:p-8 bg-[#faf7f6]">
                   <div className="mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Send Us a Message</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#c15738] to-[#5c2d23] bg-clip-text text-transparent mb-3">Send Us a Message</h2>
                     <p className="text-muted-foreground text-sm md:text-base">
                       Choose the type of inquiry that best matches your needs.
                     </p>
                   </div>
-                  <Tabs defaultValue="general" className="w-full">
+                  <Tabs defaultValue="general" className="w-full ">
                     <TabsList className="grid w-full grid-cols-4 mb-6 glass-morphism p-1">
                       <TabsTrigger 
                         value="general" 
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
                       >
                         <MessageSquare className="h-4 w-4" />
-                        <span className="hidden sm:inline">General</span>
+                        <span className="hidden sm:inline ">General</span>
                       </TabsTrigger>
                       <TabsTrigger 
                         value="supplier"
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
                       >
                         <Building className="h-4 w-4" />
                         <span className="hidden sm:inline">Supplier</span>
                       </TabsTrigger>
                       <TabsTrigger 
                         value="partnership"
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
                       >
                         <Users className="h-4 w-4" />
                         <span className="hidden sm:inline">Partner</span>
                       </TabsTrigger>
                       <TabsTrigger 
                         value="investor"
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
                       >
                         <TrendingUp className="h-4 w-4" />
                         <span className="hidden sm:inline">Investor</span>
@@ -514,7 +579,7 @@ const Contact = () => {
                       {renderFormFields("investor", "Investor Relations")}
                     </TabsContent>
                   </Tabs>
-                </GlassCard>
+                </Card>
               </motion.div>
             </div>
 
@@ -525,8 +590,8 @@ const Contact = () => {
                 animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
                 transition={{ duration: 0.6 }}
               >
-                <GlassCard variant="premium" className="p-6">
-                  <h3 className="text-xl font-semibold text-foreground mb-6">Contact Information</h3>
+                <Card variant="premium" className="p-6 bg-[#faf7f6]">
+                  <h3 className="text-xl font-semibold text-[#c94f31] mb-6">Contact Information</h3>
                   
                   <div className="space-y-4">
                     <div
@@ -534,7 +599,7 @@ const Contact = () => {
                       onClick={() => window.open('tel:+917021341409')}
                     >
                       <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Phone className="h-6 w-6 text-primary-foreground" />
                         </div>
                         <div className="flex-1">
@@ -556,7 +621,7 @@ const Contact = () => {
                       onClick={() => window.open('mailto:yurekhsolutions@gmail.com')}
                     >
                       <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Mail className="h-6 w-6 text-primary-foreground" />
                         </div>
                         <div className="flex-1">
@@ -573,7 +638,7 @@ const Contact = () => {
                       </div>
                     </div>
                   </div>
-                </GlassCard>
+                </Card>
               </motion.div>
 
               {/* Business Hours */}
@@ -582,8 +647,8 @@ const Contact = () => {
                 animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-                <GlassCard variant="premium" className="p-6">
-                  <h3 className="text-xl font-semibold text-foreground mb-6">Business Hours</h3>
+                <Card variant="premium" className="p-6 bg-[#faf7f6]">
+                  <h3 className="text-xl font-semibold text-[#c94f31] mb-6">Business Hours</h3>
                   
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b border-border/50">
@@ -606,7 +671,7 @@ const Contact = () => {
                       For urgent platform needs, our AI-powered system is available round the clock.
                     </p>
                   </div>
-                </GlassCard>
+                </Card>
               </motion.div>
             </div>
           </div>

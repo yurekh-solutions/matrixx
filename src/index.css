@@ -129,19 +129,23 @@ All colors MUST be HSL.
 /* Glass Morphism Design System */
 @layer components {
   .glass-card {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-lg;
   }
   
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:bg-white/80 hover:shadow-2xl hover:scale-[1.02];
+    @apply glass-card transition-all duration-300 hover:bg-white/80 hover:shadow-2xl hover:-translate-y-0.5;
   }
   
   .glass-morphism {
-    @apply bg-white/60 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10;
+    @apply bg-white/60 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-xl;
   }
   
   .glass-bg {
-    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900;
+    @apply bg-gradient-to-br from-[hsl(30,20%,97%)] via-white to-[hsl(30,25%,94%)] dark:from-[hsl(15,35%,12%)] dark:via-[hsl(15,30%,15%)] dark:to-[hsl(15,25%,20%)];
+  }
+  
+  .glass-stat-card {
+    @apply bg-white/80 dark:bg-black/50 backdrop-blur-2xl border border-white/30 dark:border-white/15 rounded-2xl shadow-lg p-4 md:p-6 text-center transition-all duration-300 hover:bg-white/90 hover:shadow-xl hover:-translate-y-1;
   }
 }
 
@@ -183,7 +187,7 @@ All colors MUST be HSL.
   }
   
   .bg-gradient-subtle {
-    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900;
+    @apply bg-gradient-to-br from-[hsl(30,20%,97%)] via-white to-[hsl(30,25%,94%)] dark:from-[hsl(15,35%,12%)] dark:via-[hsl(15,30%,15%)] dark:to-[hsl(15,25%,20%)];
   }
 }
 

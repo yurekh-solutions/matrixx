@@ -1,22 +1,21 @@
-import {  MapPin,  Loader2 } from "lucide-react";
-
+import { MapPin, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Phone, Mail, MessageSquare, Building, Users, TrendingUp,Clock, CheckCircle, Star, Send, Headphones  } from "lucide-react";
+import { Phone, Mail, MessageSquare, Building, Users, TrendingUp, Clock, CheckCircle, Star, Send, Headphones } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SEOHead from "@/components/SEOHead";
 import AnimatedCounter from "@/components/AnimatedCounter";
-
 import SuccessDialog from "@/components/SucessDialog";
 import { toast } from "sonner";
+import { GlassCard } from "@/components/ui/glass-card";
+
 const contactFormSchema = z.object({
   firstName: z.string()
     .trim()
@@ -54,7 +53,6 @@ const contactFormSchema = z.object({
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
 const Contact = () => {
-  
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -69,10 +67,12 @@ const Contact = () => {
   const [formErrors, setFormErrors] = useState<Partial<ContactFormData>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const statsRef = useRef(null);
-                          
   const formRef = useRef(null);
+    const contactInfoRef = useRef(null);
+
   const isFormInView = useInView(formRef, { once: true, margin: "-50px" });
   const isStatsInView = useInView(statsRef, { once: true, margin: "-50px" });
+  const isContactInfoInView = useInView(contactInfoRef, { once: true, margin: "-50px" });
 
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -80,13 +80,39 @@ const Contact = () => {
       setFormErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
-const responseStats = [
+
+  const responseStats = [
     { label: "Avg Response Time", value: 15, unit: "min", icon: Clock },
     { label: "Customer Satisfaction", value: 98, unit: "%", icon: Star },
     { label: "Issues Resolved", value: 99, unit: "%", icon: CheckCircle },
     { label: "Support Availability", value: 24, unit: "/7", icon: Headphones }
   ];
-
+ const contactMethods = [
+    {
+      icon: Phone,
+      title: "Phone Support",
+      value: "+91 91362 42706",
+      description: "Direct line to our support team",
+      available: "24/7 Available",
+      action: "tel:+919136242706"
+    },
+    {
+      icon: Mail,
+      title: "Email Support", 
+      value: "support@materialmatrix.ai",
+      description: "Detailed inquiries and documentation",
+      available: "Response within 1 hour",
+      action: "support@materialmatrix.ai"
+    },
+    {
+      icon: MapPin,
+      title: "Office Location",
+      value: "01 RR DM Road Vakola Bridge, Santacurz Mumbai 400055, INDIA",
+      description: "Visit our headquarters",
+      available: "Mon-Fri: 9AM-6PM",
+      action: "https://maps.app.goo.gl/nBjFpHMPRA67dDgBA"
+    }
+  ];
   const validateForm = (type: string) => {
     try {
       let dataToValidate = { ...formData };
@@ -130,7 +156,6 @@ const responseStats = [
     setIsSubmitting(true);
 
     try {
-      // Prepare WhatsApp message
       let whatsappMessage = `*${type} Enquiry - MaterialMatrix*\n\n`;
       whatsappMessage += `*Contact Details:*\n`;
       whatsappMessage += `Name: ${formData.firstName} ${formData.lastName}\n`;
@@ -151,7 +176,6 @@ const responseStats = [
       const encodedWhatsAppMessage = encodeURIComponent(whatsappMessage);
       const whatsappUrl = `https://wa.me/917021341409?text=${encodedWhatsAppMessage}`;
       
-      // Prepare Email
       const emailSubject = encodeURIComponent(`${type} Enquiry from ${formData.firstName} ${formData.lastName} - MaterialMatrix`);
       
       let emailBody = `${type} Enquiry - MaterialMatrix Contact Form\n\n`;
@@ -172,18 +196,15 @@ const responseStats = [
       emailBody += `Submitted: ${new Date().toLocaleString()}`;
       
       const encodedEmailBody = encodeURIComponent(emailBody);
-      const emailUrl = `mailto:yurekhsolutions@gmail.com?subject=${emailSubject}&body=${encodedEmailBody}`;
+      const emailUrl = `mailto:support@materialmatrix.ai?subject=${emailSubject}&body=${encodedEmailBody}`;
       
-      // Open both WhatsApp and Email
       window.open(whatsappUrl, '_blank');
       setTimeout(() => {
         window.open(emailUrl, '_blank');
       }, 500);
       
-      // Show success dialog
       setShowSuccess(true);
 
-      // Reset form
       setFormData({
         firstName: "",
         lastName: "",
@@ -222,7 +243,7 @@ const responseStats = [
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <div className="space-y-2">
-          <Label htmlFor={`firstName-${tabId}`} className="text-foreground font-medium">
+          <Label htmlFor={`firstName-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
             First name *
           </Label>
           <Input
@@ -230,15 +251,15 @@ const responseStats = [
             placeholder="Enter your first name"
             value={formData.firstName}
             onChange={(e) => handleInputChange("firstName", e.target.value)}
-            className={`glass-morphism ${formErrors.firstName ? 'border-destructive' : ''}`}
+            className={`glass-morphism h-11 md:h-12 rounded-xl ${formErrors.firstName ? 'border-destructive' : ''}`}
             required
           />
           {formErrors.firstName && (
-            <p className="text-destructive text-xs">{formErrors.firstName}</p>
+            <p className="text-destructive text-xs mt-1">{formErrors.firstName}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`lastName-${tabId}`} className="text-foreground font-medium">
+          <Label htmlFor={`lastName-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
             Last name *
           </Label>
           <Input
@@ -246,18 +267,18 @@ const responseStats = [
             placeholder="Enter your last name"
             value={formData.lastName}
             onChange={(e) => handleInputChange("lastName", e.target.value)}
-            className={`glass-morphism ${formErrors.lastName ? 'border-destructive' : ''}`}
+            className={`glass-morphism h-11 md:h-12 rounded-xl ${formErrors.lastName ? 'border-destructive' : ''}`}
             required
           />
           {formErrors.lastName && (
-            <p className="text-destructive text-xs">{formErrors.lastName}</p>
+            <p className="text-destructive text-xs mt-1">{formErrors.lastName}</p>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <div className="space-y-2">
-          <Label htmlFor={`email-${tabId}`} className="text-foreground font-medium">
+          <Label htmlFor={`email-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
             Email *
           </Label>
           <Input
@@ -266,15 +287,15 @@ const responseStats = [
             placeholder="your.email@company.com"
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
-            className={`glass-morphism ${formErrors.email ? 'border-destructive' : ''}`}
+            className={`glass-morphism h-11 md:h-12 rounded-xl ${formErrors.email ? 'border-destructive' : ''}`}
             required
           />
           {formErrors.email && (
-            <p className="text-destructive text-xs">{formErrors.email}</p>
+            <p className="text-destructive text-xs mt-1">{formErrors.email}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`phone-${tabId}`} className="text-foreground font-medium">
+          <Label htmlFor={`phone-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
             Phone number *
           </Label>
           <Input
@@ -282,17 +303,17 @@ const responseStats = [
             placeholder="+91 12345 67890"
             value={formData.phone}
             onChange={(e) => handleInputChange("phone", e.target.value)}
-            className={`glass-morphism ${formErrors.phone ? 'border-destructive' : ''}`}
+            className={`glass-morphism h-11 md:h-12 rounded-xl ${formErrors.phone ? 'border-destructive' : ''}`}
             required
           />
           {formErrors.phone && (
-            <p className="text-destructive text-xs">{formErrors.phone}</p>
+            <p className="text-destructive text-xs mt-1">{formErrors.phone}</p>
           )}
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`company-${tabId}`} className="text-foreground font-medium">
+        <Label htmlFor={`company-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
           Company name *
         </Label>
         <Input
@@ -300,17 +321,17 @@ const responseStats = [
           placeholder="Your company or organization name"
           value={formData.company}
           onChange={(e) => handleInputChange("company", e.target.value)}
-          className={`glass-morphism ${formErrors.company ? 'border-destructive' : ''}`}
+          className={`glass-morphism h-11 md:h-12 rounded-xl ${formErrors.company ? 'border-destructive' : ''}`}
           required
         />
         {formErrors.company && (
-          <p className="text-destructive text-xs">{formErrors.company}</p>
+          <p className="text-destructive text-xs mt-1">{formErrors.company}</p>
         )}
       </div>
 
       {(type === "Become a Supplier" || type === "Partnership") && (
         <div className="space-y-2">
-          <Label htmlFor={`additionalInfo-${tabId}`} className="text-foreground font-medium">
+          <Label htmlFor={`additionalInfo-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
             {type === "Become a Supplier" ? "Product Categories *" : "Partnership Type *"}
           </Label>
           <Input
@@ -322,14 +343,14 @@ const responseStats = [
             }
             value={formData.additionalInfo || ""}
             onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
-            className="glass-morphism"
+            className="glass-morphism h-11 md:h-12 rounded-xl"
             required
           />
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor={`message-${tabId}`} className="text-foreground font-medium">
+        <Label htmlFor={`message-${tabId}`} className="text-foreground font-medium text-sm md:text-base">
           Message *
         </Label>
         <Textarea
@@ -342,11 +363,11 @@ const responseStats = [
           }`}
           value={formData.message}
           onChange={(e) => handleInputChange("message", e.target.value)}
-          className={`glass-morphism min-h-[120px] resize-none ${formErrors.message ? 'border-destructive' : ''}`}
+          className={`glass-morphism min-h-[120px] resize-none rounded-xl ${formErrors.message ? 'border-destructive' : ''}`}
           required
         />
         {formErrors.message && (
-          <p className="text-destructive text-xs">{formErrors.message}</p>
+          <p className="text-destructive text-xs mt-1">{formErrors.message}</p>
         )}
       </div>
 
@@ -360,52 +381,36 @@ const responseStats = [
             className="mt-1 rounded border-border accent-primary" 
             required
           />
-          <label htmlFor={`privacy-${tabId}`} className="text-sm text-muted-foreground leading-relaxed">
+          <label htmlFor={`privacy-${tabId}`} className="text-xs md:text-sm text-muted-foreground leading-relaxed">
             I confirm that I have read and accepted the privacy policy and agree to the processing of my personal data. *
           </label>
+          
         </div>
+          <p className="text-xs text-muted-foreground">
+          By submitting this form, you agree to our Terms of Service and Privacy Policy. 
+          We respect your privacy and will only use your information to respond to your inquiry.
+        </p>
       </div>
 
       <Button 
         onClick={() => handleSubmit(type)}
         disabled={isSubmitting}
-        className="w-full h-12 flex items-center justify-center bg-gradient-to-br from-primary to-secondary  hover:shadow-glow transition-all duration-300 disabled:opacity-50"
+        className="w-full h-11 md:h-12 flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-primary-foreground hover:shadow-xl transition-all duration-300 disabled:opacity-50 text-sm md:text-base font-medium rounded-xl"
       >
-        <Send className="h-5 w-5 mr-2" />
-        {isSubmitting ? "Sending..." : "Send Message"}
+        {isSubmitting ? (
+          <>
+            <Loader2 className="h-4 w-4 md:h-5 md:w-5 mr-2 animate-spin" />
+            Sending...
+          </>
+        ) : (
+          <>
+            <Send className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+            Send Message
+          </>
+        )}
       </Button>
     </div>
   );
-
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "name": "Contact MaterialMatrix",
-    "description": "Get in touch with MaterialMatrix for construction material procurement, supplier partnerships, and business inquiries",
-    "url": "https://materialmatrix.com/contact"
-  };
-
-  const contactInfo = [
-    {
-      icon: Mail,
-      title: "Email",
-      value: "soniajaiswal2222@gmail.com",
-      link: "mailto:soniajaiswal2222@gmail.com"
-    },
-    {
-      icon: Phone,
-      title: "Phone",
-      value: "+91 917021341409",
-      link: "tel:+919170213414009"
-    },
-    {
-      icon: MapPin,
-      title: "Address",
-      value: "Mumbai, Maharashtra, India",
-      link: null
-    }
-  ];
-
 
   return (
     <>
@@ -413,153 +418,113 @@ const responseStats = [
         title="Contact Us | MaterialMatrix"
         description="Get in touch with MaterialMatrix. We're here to help with your construction material procurement needs."
       />
-
-      <div className="min-h-screen bg-background  ">
-        {/* Header */}
-      
+{/* bg-[#f3f0ec] */}
+      <div className="min-h-screen bg-[#f3f0ec]">
+        {/* Hero Section */}
         <section className="py-12 md:py-20 relative overflow-hidden">
-  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary-glow/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary-glow/5 pointer-events-none" />
 
-  <div className="container mx-auto px-4 relative z-10 mt-20">
-    <motion.div
-      className="text-center mb-12 md:mb-16"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <Badge className="mb-4 md:mb-6 bg-primary/10 text-primary border-primary/30 px-4 md:px-6 py-1.5 md:py-2">
-        Contact Us
-      </Badge>
-      <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
-        <span className="bg-gradient-to-r from-[#c15738] to-[#5c2d23] bg-clip-text text-transparent">
-          Get in Touch
-        </span>
-      </h1>
-      <div className="w-24 md:w-32 h-1 bg-gradient-primary mx-auto rounded-full mb-6 md:mb-8" />
-      <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-        We're here to help with any questions about our products, services, partnerships, 
-        or investment opportunities. Our team responds within 15 minutes.
-      </p>
-    </motion.div>
+          <div className="container mx-auto px-4 relative z-10 mt-16 md:mt-20">
+            <motion.div
+              className="text-center mb-10 md:mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Badge className="mb-4 md:mb-6 bg-primary/10 text-primary border-primary/30 px-4 md:px-6 py-1.5 md:py-2 text-xs md:text-sm">
+                Contact Us
+              </Badge>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 px-4">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Get in Touch
+                </span>
+              </h1>
+              <div className="w-20 md:w-32 h-1 bg-gradient-primary mx-auto rounded-full mb-4 md:mb-8" />
+              <p className="text-sm md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+                We're here to help with any questions about our products, services, partnerships, 
+                or investment opportunities. Our team responds within 15 minutes.
+              </p>
+            </motion.div>
 
-    {/* Response Time Stats */}
-    <div
-      className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12 md:mb-16"
-      ref={statsRef}
-    >
-      {responseStats.map((stat, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={isStatsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-        >
-          {/* 🌟 Glassmorphism Card with Border + Shadow */}
-          <div className="
-            p-4 md:p-6 text-center group 
-            rounded-2xl 
-            bg-white/10 
-              border border-white/20 
-    shadow-[0_4px_20px_rgba(0,0,0,0.1)] 
-    transition-all duration-300 ease-in-out
-
-    hover:bg-white/20
-  
-          ">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
-              <stat.icon className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
-            </div>
-            <div className="text-xl md:text-2xl font-bold text-primary mb-1">
-              <AnimatedCounter 
-                end={stat.value} 
-                suffix={stat.unit}
-                duration={2}
-              />
-            </div>
-            <p className="text-xs md:text-sm font-medium text-foreground">{stat.label}</p>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-</section>
-
-
-
-        {/* Contact Info Cards */}
-        <section className=" container  mx-auto px-4">
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {contactInfo.map((info, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-6 text-center hover-lift">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-4">
-                    <info.icon className="h-6 w-6 text-white" />
+            {/* Response Time Stats */}
+            <div
+              className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-10 md:mb-16 px-4"
+              ref={statsRef}
+            >
+              {responseStats.map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isStatsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="glass-stat-card group"
+                >
+                  <div className="w-10 h-10 md:w-14 md:h-14 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <stat.icon className="h-5 w-5 md:h-7 md:w-7 text-primary-foreground" />
                   </div>
-                  <h3 className="font-semibold mb-2">{info.title}</h3>
-                  {info.link ? (
-                    <a
-                      href={info.link}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {info.value}
-                    </a>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{info.value}</p>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div> */}
-           <div className="container bg-[#faf7f6] mx-auto px-4 pb-16 ">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 rounded-full ">
+                  <div className="text-xl md:text-2xl lg:text-3xl font-bold text-primary mb-1">
+                    <AnimatedCounter 
+                      end={stat.value} 
+                      suffix={stat.unit}
+                      duration={2}
+                    />
+                  </div>
+                  <p className="text-xs md:text-sm font-medium text-foreground leading-tight">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Form and Info Section */}
+        <section className="container mx-auto px-4 pb-12 md:pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             {/* Contact Form */}
-            <div className="lg:col-span-2 rounded-full " ref={formRef}>
+            <div className="lg:col-span-2" ref={formRef}>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                 transition={{ duration: 0.6 }}
               >
-                <Card variant="premium" className="p-6 md:p-8 bg-[#faf7f6]">
-                  <div className="mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#c15738] to-[#5c2d23] bg-clip-text text-transparent mb-3">Send Us a Message</h2>
-                    <p className="text-muted-foreground text-sm md:text-base">
-                      Choose the type of inquiry that best matches your needs.
+                <Card className=" p-4 md:p-8 rounded-2xl">
+                  <div className="mb-6 md:mb-8">
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2 md:mb-3">
+                      Contact Us 
+                    </h2>
+                    <p className="text-muted-foreground text-xs md:text-sm lg:text-base">
+                      Choose the type of inquiry that best matches your needs for faster, more targeted assistance.
                     </p>
                   </div>
-                  <Tabs defaultValue="general" className="w-full ">
-                    <TabsList className="grid w-full grid-cols-4 mb-6 glass-morphism p-1">
+                  
+                  <Tabs defaultValue="general" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 mb-6 glass-morphism p-1 h-auto rounded-2xl">
                       <TabsTrigger 
                         value="general" 
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
+                        className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 md:py-2.5 px-2 text-xs md:text-sm rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                       >
-                        <MessageSquare className="h-4 w-4" />
-                        <span className="hidden sm:inline ">General</span>
+                        <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
+                        <span>General</span>
                       </TabsTrigger>
                       <TabsTrigger 
                         value="supplier"
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
+                        className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 md:py-2.5 px-2 text-xs md:text-sm rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                       >
-                        <Building className="h-4 w-4" />
-                        <span className="hidden sm:inline">Supplier</span>
+                        <Building className="h-3 w-3 md:h-4 md:w-4" />
+                        <span>Supplier</span>
                       </TabsTrigger>
                       <TabsTrigger 
                         value="partnership"
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
+                        className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 md:py-2.5 px-2 text-xs md:text-sm rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                       >
-                        <Users className="h-4 w-4" />
-                        <span className="hidden sm:inline">Partner</span>
+                        <Users className="h-3 w-3 md:h-4 md:w-4" />
+                        <span>Partner</span>
                       </TabsTrigger>
                       <TabsTrigger 
                         value="investor"
-                        className="flex items-center gap-2 data-[state=active]:bg-gradient-to-br from-primary to-secondary data-[state=active]:text-primary-foreground"
+                        className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 md:py-2.5 px-2 text-xs md:text-sm rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                       >
-                        <TrendingUp className="h-4 w-4" />
-                        <span className="hidden sm:inline">Investor</span>
+                        <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
+                        <span>Investor</span>
                       </TabsTrigger>
                     </TabsList>
 
@@ -584,29 +549,29 @@ const responseStats = [
             </div>
 
             {/* Contact Info Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
                 transition={{ duration: 0.6 }}
               >
-                <Card variant="premium" className="p-6 bg-[#faf7f6]">
-                  <h3 className="text-xl font-semibold text-[#c94f31] mb-6">Contact Information</h3>
+                {/* <div className="glass-card p-4 md:p-6 rounded-2xl">
+                  <h3 className="text-lg md:text-xl font-semibold text-primary mb-4 md:mb-6">Contact Information</h3>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div
                       className="group cursor-pointer"
                       onClick={() => window.open('tel:+917021341409')}
                     >
-                      <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <Phone className="h-6 w-6 text-primary-foreground" />
+                      <div className="flex items-start space-x-3 md:space-x-4 p-3 md:p-4 rounded-xl glass-morphism group-hover:bg-primary/5 transition-all duration-300">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 shadow-md">
+                          <Phone className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
                         </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors text-sm md:text-base">
                             Phone Support
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">
                             +91 917021341409
                           </p>
                           <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/30">
@@ -620,16 +585,16 @@ const responseStats = [
                       className="group cursor-pointer"
                       onClick={() => window.open('mailto:yurekhsolutions@gmail.com')}
                     >
-                      <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <Mail className="h-6 w-6 text-primary-foreground" />
+                      <div className="flex items-start space-x-3 md:space-x-4 p-3 md:p-4 rounded-xl glass-morphism group-hover:bg-primary/5 transition-all duration-300">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 shadow-md">
+                          <Mail className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
                         </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors text-sm md:text-base">
                             Email Support
                           </p>
-                          <p className="text-sm text-muted-foreground break-words">
-                            yurekhsolutions@gmail.com
+                          <p className="text-xs md:text-sm text-muted-foreground break-words">
+                            support@materialmatrix.ai
                           </p>
                           <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/30">
                             Response within 1 hour
@@ -637,6 +602,47 @@ const responseStats = [
                         </div>
                       </div>
                     </div>
+                    
+                  </div>
+                </div> */}
+                  <div className="space-y-6" ref={contactInfoRef}>
+              {/* Contact Methods */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={isContactInfoInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Card className="p-4 md:p-6 ">
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent  mb-6">Contact Information</h3>
+                  
+                  <div className="space-y-4 ">
+                    {contactMethods.map((method, index) => (
+                      <div
+                        key={index}
+                        className="group cursor-pointer rounded-lg border border-primary/20"
+                        onClick={() => method.action && window.open(method.action)}
+                      >
+                        <div className="flex items-start space-x-4 p-4 rounded-lg glass-morphism group-hover:bg-primary/5 transition-all duration-300">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary  rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                            <method.icon className="h-6 w-6 text-primary-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
+                              {method.title}
+                            </p>
+                            <p className="text-sm text-muted-foreground break-words">
+                              {method.value}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {method.description}
+                            </p>
+                            <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-primary border-primary/30">
+                              {method.available}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </Card>
               </motion.div>
@@ -644,43 +650,78 @@ const responseStats = [
               {/* Business Hours */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
-                animate={isFormInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+                animate={isContactInfoInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-                <Card variant="premium" className="p-6 bg-[#faf7f6]">
-                  <h3 className="text-xl font-semibold text-[#c94f31] mb-6">Business Hours</h3>
+                <Card className="p-4 md:p-6 rounded-lg border border-primary/20">
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent  mb-6">Business Hours</h3>
                   
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <div className="flex justify-between items-center py-2 border-b border-glass-border">
                       <span className="text-muted-foreground text-sm">Monday - Friday</span>
                       <span className="text-foreground font-medium text-sm">9:00 AM - 6:00 PM</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <div className="flex justify-between items-center py-2 border-b border-glass-border">
                       <span className="text-muted-foreground text-sm">Saturday</span>
                       <span className="text-foreground font-medium text-sm">9:00 AM - 4:00 PM</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
                       <span className="text-muted-foreground text-sm">Sunday</span>
-                      <span className="text-destructive font-medium text-sm">Closed</span>
+                      <span className="text-red-400 font-medium text-sm">Closed</span>
                     </div>
                   </div>
 
                   <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
                     <p className="text-sm font-medium text-primary mb-2">24/7 Emergency Support</p>
                     <p className="text-xs text-muted-foreground">
-                      For urgent platform needs, our AI-powered system is available round the clock.
+                      For urgent platform needs, our AI-powered system and emergency team are available round the clock.
                     </p>
                   </div>
                 </Card>
               </motion.div>
+
+              {/* Google Maps */}
+             
             </div>
+              </motion.div>
+
+             
+            </div>
+            
           </div>
-        </div>
+           <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={isContactInfoInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <Card  className="p-4 md:p-6 mt-6">
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-6">Find Us</h3>
+                  
+                  <div className="rounded-lg overflow-hidden">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.7828982152157!2d72.84476011541492!3d19.08017148708359!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9fd9b6f9a07%3A0x65e3a56ebe533fc9!2sVakola%20Bridge!5e0!3m2!1sen!2sin!4v1730096471201!5m2!1sen!2sin"
+
+                      width="100%"
+                      height="200"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="rounded-lg"
+                    />
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <p className="text-sm font-medium text-primary mb-2">Office Address</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      01 RR DM Road Vakola Bridge, Santacurz Mumbai 400055, INDIA
+                    </p>
+                  </div>
+                </Card>
+              </motion.div>
         </section>
 
-        {/* Contact Form */}
-            <SuccessDialog open={showSuccess} onClose={() => setShowSuccess(false)} />
-
+        <SuccessDialog open={showSuccess} onClose={() => setShowSuccess(false)} />
       </div>
     </>
   );
